@@ -51,9 +51,9 @@ export const useMultiplayer = () => {
           if (playerIds.length === 1) newPlayers[playerIds[0]].isLeader = true; 
           if (playerIds.length === 2) newPlayers[playerIds[1]].isLeader = true; 
 
-          updateGameState({ players: newPlayers });
-          broadcastState({ players: newPlayers, gameState: currentState.gameState });
           connectionsRef.current[data.payload.id] = conn;
+          updateGameState({ players: newPlayers });
+          broadcastState({ players: newPlayers, gameState: currentState.gameState, currentRound: currentState.currentRound, maxRounds: currentState.maxRounds, teamAScore: currentState.teamAScore, teamBScore: currentState.teamBScore });
         }
 
         if (data.type === 'UPDATE_STATE') {
