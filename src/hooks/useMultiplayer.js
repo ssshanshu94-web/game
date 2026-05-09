@@ -81,7 +81,7 @@ export const useMultiplayer = () => {
     newPeer.on('open', (id) => {
       console.log('My peer ID is: ' + id);
       if (!isHost && roomCode) {
-        connectToHost(newPeer, roomCode);
+        connectToHost(newPeer, `host-${roomCode}`);
       }
     });
 

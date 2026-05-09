@@ -9,10 +9,10 @@ const JoinScreen = () => {
   const handleCreate = () => {
     if (!name) return;
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const myId = `player-${Math.random().toString(36).substring(2, 8)}`;
+    const myId = `host-${roomId}`;
     setPlayerInfo(myId, name, true, roomId);
     updateGameState({ 
-        players: { [myId]: { name, team: 'A', isLeader: true } } // Host auto A leader
+        players: { [myId]: { name, team: 'A', isLeader: true } }
     });
   };
 
