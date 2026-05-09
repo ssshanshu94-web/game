@@ -8,6 +8,7 @@ const DrawingBoard = () => {
   const { 
     players, playerId, currentTurnTeam, secretWord, 
     updateGameState, chatHistory, teamAScore, teamBScore,
+    currentDrawerId, drawingStarted, timeLeft,
     broadcastState, sendChat 
   } = useGameStore();
   const canvasRef = useRef(null);
@@ -21,8 +22,8 @@ const DrawingBoard = () => {
 
   // Drawer logic: Simplest approach for MVP - 1st player of currentTurnTeam is drawer.
   // We can enhance this to rotate drawers.
-  const turnTeamPlayers = Object.entries(players).filter(([id, p]) => { void id; return p.team === currentTurnTeam; });
-  const drawerId = turnTeamPlayers.length > 0 ? turnTeamPlayers[0][0] : null; 
+  const drawerId = currentDrawerId;
+  const drawerName = drawerId && players[drawerId] ? players[drawerId].name : 'Someone';
   const isDrawer = playerId === drawerId;
 
   // The team opposing the drawing team is the judging team
@@ -31,12 +32,29 @@ const DrawingBoard = () => {
 
   // Handle canvas changes
   const handleDraw = () => {
+    if (isDrawer && !drawingStarted) {
+      updateGameState({ drawingStarted: true });
+      broadcastState({ drawingStarted: true });
+    }
     if (!isDrawer || !canvasRef.current) return;
     const data = canvasRef.current.getSaveData();
     // In a real app, sending full save data on every stroke might be heavy, 
     // but works for simple peer-to-peer MVP.
     broadcastState({ drawingData: data });
   };
+
+  useEffect(() => {
+    if (!drawingStarted || timeLeft <= 0) return;
+    const timer = setInterval(() => {
+      // Only Host drives the timer to keep it strictly synced
+      if (useGameStore.getState().isHost) {
+        const newTime = useGameStore.getState().timeLeft - 1;
+        updateGameState({ timeLeft: newTime });
+        broadcastState({ timeLeft: newTime });
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [drawingStarted, timeLeft]);
 
   // Listen for drawing data from host/peers
   useEffect(() => {
@@ -79,7 +97,9 @@ const DrawingBoard = () => {
       gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION',
       secretWord: '',
       drawingData: '',
-      suggestedWords: []
+      suggestedWords: [],
+      drawingStarted: false,
+      timeLeft: 120
     };
 
     if (!isGameOver && currentTurnTeam === 'B') {
@@ -108,13 +128,16 @@ const DrawingBoard = () => {
               </span>
             ) : isJudgingTeam ? (
               <span className="flex items-center gap-2">
-                <span className="text-gray-400">Secret Word:</span> 
+                <span className="text-gray-400">{drawerName} is drawing:</span> 
                 <span className="text-red-400 font-mono line-through opacity-70 text-lg">{secretWord}</span>
                 <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-500 ml-2">(They can't see this)</span>
               </span>
             ) : (
-              <span className="text-purple-400 animate-pulse">Guess the word!</span>
+              <span className="text-purple-400 animate-pulse">{drawerName} is drawing! Guess the word!</span>
             )}
+            <div className="mt-1 text-center font-mono text-2xl font-black">
+              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+            </div>
           </div>
           
           {isJudgingTeam && (
@@ -143,18 +166,29 @@ const DrawingBoard = () => {
 
         {/* Canvas */}
         <div className="flex-1 bg-[#1f2937] w-full h-full pt-16">
+          {isDrawer ? (
           <CanvasDraw
             ref={canvasRef}
-            disabled={!isDrawer}
+            disabled={timeLeft <= 0 || !drawingStarted}
             hideGrid={true}
             brushColor={color}
             brushRadius={brushRadius}
             lazyRadius={0}
-            canvasWidth="100%"
-            canvasHeight="100%"
+            canvasWidth={800}
+            canvasHeight={600}
             onChange={handleDraw}
             backgroundColor="#1f2937"
           />
+) : (
+          <CanvasDraw
+            ref={canvasRef}
+            disabled={true}
+            hideGrid={true}
+            canvasWidth={800}
+            canvasHeight={600}
+            backgroundColor="#1f2937"
+          />
+)}
         </div>
       </div>
 

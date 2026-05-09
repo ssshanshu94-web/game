@@ -27,7 +27,21 @@ const WordSelection = () => {
 
   const handleSelectWord = (word) => {
     if (!amILeader) return;
-    const newState = { secretWord: word, gameState: 'DRAWING', suggestedWords: [] };
+    // Determine the drawer for the current round
+    const currentState = useGameStore.getState();
+    const turnTeamPlayers = Object.entries(players).filter(([id, p]) => { void id; return p.team === currentTurnTeam; });
+    // Use current round to rotate drawers
+    const drawerIndex = (currentState.currentRound - 1) % turnTeamPlayers.length;
+    const drawerId = turnTeamPlayers.length > 0 ? turnTeamPlayers[drawerIndex][0] : null;
+    
+    const newState = { 
+      secretWord: word, 
+      gameState: 'DRAWING', 
+      suggestedWords: [],
+      currentDrawerId: drawerId || null,
+      drawingStarted: false,
+      timeLeft: 120
+    };
     updateGameState(newState);
     broadcastState(newState);
   };

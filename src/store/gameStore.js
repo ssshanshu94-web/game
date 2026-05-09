@@ -18,6 +18,9 @@ const useGameStore = create((set) => ({
   teamBScore: 0,
   
   currentTurnTeam: 'B', // A gives word, B draws and guesses
+  currentDrawerId: null,
+  drawingStarted: false,
+  timeLeft: 120,
   secretWord: '',
   suggestedWords: [], // { word, suggestedBy }
   
