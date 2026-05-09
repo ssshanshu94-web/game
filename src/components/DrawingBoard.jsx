@@ -88,7 +88,11 @@ const DrawingBoard = () => {
 
     // Move to next round/turn
     const currentState = useGameStore.getState();
-    const isGameOver = currentState.currentRound >= currentState.maxRounds * 2; // *2 because each round has 2 turns (A & B)
+    let nextRound = currentState.currentRound;
+    if (currentTurnTeam === 'B') {
+        nextRound += 1;
+    }
+    const isGameOver = nextRound > currentState.maxRounds;
     
     const nextState = {
       teamAScore: newA,
@@ -99,12 +103,9 @@ const DrawingBoard = () => {
       drawingData: '',
       suggestedWords: [],
       drawingStarted: false,
-      timeLeft: 120
+      timeLeft: 120,
+      currentRound: nextRound
     };
-
-    if (!isGameOver && currentTurnTeam === 'B') {
-        nextState.currentRound = currentState.currentRound + 1; // Increment round only after both teams have played
-    }
 
     updateGameState(nextState);
     broadcastState(nextState);
@@ -169,7 +170,7 @@ const DrawingBoard = () => {
           {isDrawer ? (
           <CanvasDraw
             ref={canvasRef}
-            disabled={timeLeft <= 0 || !drawingStarted}
+            disabled={timeLeft <= 0}
             hideGrid={true}
             brushColor={color}
             brushRadius={brushRadius}

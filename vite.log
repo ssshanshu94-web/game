@@ -7,3 +7,5 @@
 
   ➜  Local:   http://localhost:5173/game/
   ➜  Network: use --host to expose
+10:29:38 PM [vite] (client) hmr update /src/components/DrawingBoard.jsx, /src/index.css
+10:30:15 PM [vite] (client) hmr update /src/components/DrawingBoard.jsx, /src/index.css
