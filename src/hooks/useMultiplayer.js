@@ -49,7 +49,7 @@ export const useMultiplayer = () => {
           
           const playerIds = Object.keys(newPlayers);
           if (playerIds.length === 1) newPlayers[playerIds[0]].isLeader = true; 
-          if (playerIds.length === 2) newPlayers[playerIds[1]].isLeader = true; 
+          if (playerIds.length === 2) { newPlayers[playerIds[1]].isLeader = true; newPlayers[playerIds[1]].team = 'B'; } 
 
           connectionsRef.current[data.payload.id] = conn;
           updateGameState({ players: newPlayers });
