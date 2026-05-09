@@ -6,7 +6,7 @@ export const useMultiplayer = () => {
   const connectionsRef = useRef({});
   const { 
     playerId, playerName, isHost, roomCode, 
-    updateGameState, addChat
+    updateGameState, addChat, setMultiplayerActions
   } = useGameStore();
 
   const broadcastState = useCallback((partialState) => {
@@ -18,11 +18,28 @@ export const useMultiplayer = () => {
     }
 
     Object.values(connectionsRef.current).forEach(conn => {
-      if (conn.open) {
+      if (conn && conn.open) {
         conn.send({ type: 'SYNC_STATE', payload: partialState });
       }
     });
   }, [isHost]);
+
+  const sendChat = useCallback((msgObj) => {
+     if (isHost) {
+        const currentState = useGameStore.getState();
+        const updatedChat = [...currentState.chatHistory, msgObj];
+        updateGameState({ chatHistory: updatedChat });
+        broadcastState({ chatHistory: updatedChat });
+     } else {
+        if (connectionsRef.current['host']) {
+           connectionsRef.current['host'].send({ type: 'CHAT', payload: msgObj });
+        }
+     }
+  }, [isHost, broadcastState, updateGameState]);
+
+  useEffect(() => {
+    setMultiplayerActions({ broadcastState, sendChat });
+  }, [broadcastState, sendChat, setMultiplayerActions]);
 
   useEffect(() => {
     if (!playerId) return;
@@ -99,18 +116,5 @@ export const useMultiplayer = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerId, isHost, roomCode]);
   
-  const sendChat = (msgObj) => {
-     if (isHost) {
-        const currentState = useGameStore.getState();
-        const updatedChat = [...currentState.chatHistory, msgObj];
-        updateGameState({ chatHistory: updatedChat });
-        broadcastState({ chatHistory: updatedChat });
-     } else {
-        if (connectionsRef.current['host']) {
-           connectionsRef.current['host'].send({ type: 'CHAT', payload: msgObj });
-        }
-     }
-  }
-
   return { broadcastState, sendChat };
 };

@@ -1,9 +1,8 @@
 import useGameStore from '../store/gameStore';
-import { useMultiplayer } from '../hooks/useMultiplayer';
+
 
 const LobbyScreen = () => {
-  const { players, playerId, isHost, roomCode, updateGameState } = useGameStore();
-  const { broadcastState } = useMultiplayer();
+  const { players, playerId, isHost, roomCode, updateGameState, broadcastState } = useGameStore();
 
   const myPlayer = players[playerId] || {};
   const isLeaderA = Object.values(players).find(p => p.team === 'A' && p.isLeader)?.name === myPlayer.name;

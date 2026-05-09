@@ -27,7 +27,10 @@ const useGameStore = create((set) => ({
   
   updateGameState: (newState) => set((state) => ({ ...state, ...newState })),
   
-  addChat: (msg) => set((state) => ({ chatHistory: [...state.chatHistory, msg] }))
+  addChat: (msg) => set((state) => ({ chatHistory: [...state.chatHistory, msg] })),
+  broadcastState: () => {}, // placeholder
+  sendChat: () => {}, // placeholder
+  setMultiplayerActions: (actions) => set({ ...actions })
 }));
 
 export default useGameStore;

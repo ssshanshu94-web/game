@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import CanvasDraw from 'react-canvas-draw';
 import useGameStore from '../store/gameStore';
-import { useMultiplayer } from '../hooks/useMultiplayer';
+
 import { Eraser, Trash2, Send } from 'lucide-react';
 
 const DrawingBoard = () => {
   const { 
     players, playerId, currentTurnTeam, secretWord, 
-    updateGameState, chatHistory, teamAScore, teamBScore 
+    updateGameState, chatHistory, teamAScore, teamBScore,
+    broadcastState, sendChat 
   } = useGameStore();
-  
-  const { broadcastState, sendChat } = useMultiplayer();
   const canvasRef = useRef(null);
   
   const [color, setColor] = useState('#ffffff');

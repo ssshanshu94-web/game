@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import useGameStore from '../store/gameStore';
-import { useMultiplayer } from '../hooks/useMultiplayer';
+
 
 const WordSelection = () => {
-  const { players, playerId, currentTurnTeam, suggestedWords, updateGameState } = useGameStore();
-  const { broadcastState } = useMultiplayer();
+  const { players, playerId, currentTurnTeam, suggestedWords, updateGameState, broadcastState } = useGameStore();
   const [wordInput, setWordInput] = useState('');
 
   const myPlayer = players[playerId];
