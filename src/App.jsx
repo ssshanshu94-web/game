@@ -7,7 +7,7 @@ import DrawingBoard from './components/DrawingBoard';
 import { useMultiplayer } from './hooks/useMultiplayer';
 
 function App() {
-  const { gameState, currentRound, maxRounds, teamAScore, teamBScore, currentTurnTeam } = useGameStore();
+  const { gameState, currentRound, maxRounds, teamAScore, teamBScore, currentTurnTeam, teamAName, teamBName } = useGameStore();
   
   // Initialize multiplayer hook at root so it listens to changes
   useMultiplayer();
@@ -22,11 +22,11 @@ function App() {
         <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-6">
            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Game Over!</h1>
            <div className="text-3xl text-white">
-              Team A: <span className="font-bold text-purple-400">{teamAScore}</span> - 
-              Team B: <span className="font-bold text-pink-400">{teamBScore}</span>
+              {teamAName || 'Team A'}: <span className="font-bold text-purple-400">{teamAScore}</span> - 
+              {teamBName || 'Team B'}: <span className="font-bold text-pink-400">{teamBScore}</span>
            </div>
            <h2 className="text-4xl text-white mt-4">
-              {teamAScore > teamBScore ? '🏆 Team A Wins!' : teamBScore > teamAScore ? '🏆 Team B Wins!' : '🤝 It\'s a Tie!'}
+              {teamAScore > teamBScore ? `🏆 ${teamAName || 'Team A'} Wins!` : teamBScore > teamAScore ? `🏆 ${teamBName || 'Team B'} Wins!` : '🤝 It\'s a Tie!'}
            </h2>
            <button onClick={() => window.location.reload()} className="mt-8 bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 rounded-xl border border-gray-600 transition">Play Again</button>
         </div>
@@ -59,18 +59,18 @@ function App() {
             <div className="h-8 w-px bg-gray-700"></div>
             <div className="flex gap-4 font-mono">
               <div className="flex flex-col items-center">
-                <span className="text-[10px] text-purple-400 font-bold">TEAM A</span>
+                <span className="text-[10px] text-purple-400 font-bold uppercase truncate max-w-[80px]">{teamAName || "TEAM A"}</span>
                 <span className="text-xl font-bold">{teamAScore}</span>
               </div>
               <div className="text-gray-600 mt-2">:</div>
               <div className="flex flex-col items-center">
-                <span className="text-[10px] text-pink-400 font-bold">TEAM B</span>
+                <span className="text-[10px] text-pink-400 font-bold uppercase truncate max-w-[80px]">{teamBName || "TEAM B"}</span>
                 <span className="text-xl font-bold">{teamBScore}</span>
               </div>
             </div>
             <div className="h-8 w-px bg-gray-700"></div>
             <div className="text-sm">
-               Turn: <span className={currentTurnTeam === 'A' ? 'text-purple-400 font-bold' : 'text-pink-400 font-bold'}>Team {currentTurnTeam}</span>
+               Turn: <span className={currentTurnTeam === 'A' ? 'text-purple-400 font-bold' : 'text-pink-400 font-bold'}>{currentTurnTeam === 'A' ? (teamAName || 'Team A') : (teamBName || 'Team B')}</span>
             </div>
           </div>
         </header>

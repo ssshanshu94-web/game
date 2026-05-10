@@ -8,7 +8,7 @@ const DrawingBoard = () => {
   const { 
     players, playerId, currentTurnTeam, secretWord, 
     updateGameState, chatHistory, teamAScore, teamBScore,
-    currentDrawerId, drawingStarted, timeLeft,
+    currentDrawerId, drawingStarted, timeLeft, teamAName, teamBName,
     broadcastState, sendChat 
   } = useGameStore();
   const canvasRef = useRef(null);
@@ -198,8 +198,8 @@ const DrawingBoard = () => {
         <div className="bg-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
            <h3 className="font-bold text-white">Chat & Guesses</h3>
            <div className="flex gap-3 text-xs font-mono">
-              <span className="text-purple-400">A: {teamAScore}</span>
-              <span className="text-pink-400">B: {teamBScore}</span>
+              <span className="text-purple-400 truncate max-w-[50px]" title={teamAName}>{teamAName || 'A'}: {teamAScore}</span>
+              <span className="text-pink-400 truncate max-w-[50px]" title={teamBName}>{teamBName || 'B'}: {teamBScore}</span>
            </div>
         </div>
         

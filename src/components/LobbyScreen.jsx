@@ -2,7 +2,7 @@ import useGameStore from '../store/gameStore';
 
 
 const LobbyScreen = () => {
-  const { players, playerId, isHost, roomCode, updateGameState, broadcastState } = useGameStore();
+  const { players, playerId, isHost, roomCode, teamAName, teamBName, updateGameState, broadcastState } = useGameStore();
 
   const myPlayer = players[playerId] || {};
   const isLeaderA = Object.values(players).find(p => p.team === 'A' && p.isLeader)?.name === myPlayer.name;
@@ -13,6 +13,17 @@ const LobbyScreen = () => {
     
     // Quick check: Leader A can only add to Team A, Leader B to Team B
     if (myPlayer.team !== team) return;
+    
+    const aCount = Object.values(players).filter(p => p.team === 'A').length;
+    const bCount = Object.values(players).filter(p => p.team === 'B').length;
+    if (team === 'A' && aCount > bCount) {
+        alert("It's Team B's turn to pick!");
+        return;
+    }
+    if (team === 'B' && bCount >= aCount) {
+        alert("It's Team A's turn to pick!");
+        return;
+    }
 
     const newPlayers = { ...players };
     newPlayers[targetPlayerId].team = team;
@@ -54,9 +65,21 @@ const LobbyScreen = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Team A */}
           <div className="bg-purple-900/20 border border-purple-500/30 rounded-2xl p-4 flex flex-col h-full shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-            <h3 className="text-xl font-bold text-purple-400 mb-4 flex items-center">
-              <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div> Team A
-            </h3>
+            <div className="mb-4 flex items-center">
+              <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+              {isLeaderA ? (
+                <input 
+                  className="bg-transparent border-b border-purple-500 text-xl font-bold text-purple-400 focus:outline-none max-w-[150px]"
+                  value={teamAName || 'Team A'}
+                  onChange={(e) => {
+                     updateGameState({ teamAName: e.target.value });
+                     broadcastState({ teamAName: e.target.value });
+                  }}
+                />
+              ) : (
+                <h3 className="text-xl font-bold text-purple-400">{teamAName || 'Team A'}</h3>
+              )}
+            </div>
             <div className="flex-1 space-y-2">
               {teamA.map(([id, p]) => (
                 <div key={id} className="bg-gray-800 rounded-lg p-3 flex justify-between items-center border border-gray-700">
@@ -93,9 +116,21 @@ const LobbyScreen = () => {
 
           {/* Team B */}
           <div className="bg-pink-900/20 border border-pink-500/30 rounded-2xl p-4 flex flex-col h-full shadow-[0_0_15px_rgba(236,72,153,0.1)]">
-            <h3 className="text-xl font-bold text-pink-400 mb-4 flex items-center justify-end">
-              Team B <div className="w-3 h-3 rounded-full bg-pink-500 ml-2"></div>
-            </h3>
+            <div className="mb-4 flex items-center justify-end">
+              {isLeaderB ? (
+                <input 
+                  className="bg-transparent border-b border-pink-500 text-xl font-bold text-pink-400 focus:outline-none max-w-[150px] text-right"
+                  value={teamBName || 'Team B'}
+                  onChange={(e) => {
+                     updateGameState({ teamBName: e.target.value });
+                     broadcastState({ teamBName: e.target.value });
+                  }}
+                />
+              ) : (
+                <h3 className="text-xl font-bold text-pink-400">{teamBName || 'Team B'}</h3>
+              )}
+              <div className="w-3 h-3 rounded-full bg-pink-500 ml-2"></div>
+            </div>
             <div className="flex-1 space-y-2">
               {teamB.map(([id, p]) => (
                 <div key={id} className="bg-gray-800 rounded-lg p-3 flex justify-between items-center border border-gray-700">

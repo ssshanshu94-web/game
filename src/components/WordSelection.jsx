@@ -91,14 +91,27 @@ const WordSelection = () => {
                 <span className="text-xl font-bold text-white mr-3">{item.word}</span>
                 <span className="text-xs text-gray-400 bg-gray-900 px-2 py-1 rounded">by {item.suggestedBy}</span>
               </div>
-              {amILeader && (
+              <div className="flex items-center gap-3">
                 <button 
-                  onClick={() => handleSelectWord(item.word)}
-                  className="bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-green-500/20"
+                  onClick={() => {
+                     const newSuggestions = [...suggestedWords];
+                     newSuggestions[idx].votes = (newSuggestions[idx].votes || 0) + 1;
+                     updateGameState({ suggestedWords: newSuggestions });
+                     broadcastState({ suggestedWords: newSuggestions });
+                  }}
+                  className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center"
                 >
-                  Select
+                  <span className="mr-1">👍</span> {item.votes || 0}
                 </button>
-              )}
+                {amILeader && (
+                  <button 
+                    onClick={() => handleSelectWord(item.word)}
+                    className="bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-green-500/20"
+                  >
+                    Select
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

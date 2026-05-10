@@ -70,7 +70,7 @@ export const useMultiplayer = () => {
 
           connectionsRef.current[data.payload.id] = conn;
           updateGameState({ players: newPlayers });
-          broadcastState({ players: newPlayers, gameState: currentState.gameState, currentRound: currentState.currentRound, maxRounds: currentState.maxRounds, teamAScore: currentState.teamAScore, teamBScore: currentState.teamBScore });
+          broadcastState({ players: newPlayers, gameState: currentState.gameState, currentRound: currentState.currentRound, maxRounds: currentState.maxRounds, teamAScore: currentState.teamAScore, teamBScore: currentState.teamBScore, teamAName: currentState.teamAName, teamBName: currentState.teamBName });
         }
 
         if (data.type === 'UPDATE_STATE') {
