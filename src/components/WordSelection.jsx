@@ -3,7 +3,7 @@ import useGameStore from '../store/gameStore';
 
 
 const WordSelection = () => {
-  const { players, playerId, currentTurnTeam, suggestedWords, updateGameState, broadcastState } = useGameStore();
+  const { players, playerId, currentTurnTeam, suggestedWords, currentRound, teamAName, teamBName, updateGameState, broadcastState } = useGameStore();
   const [wordInput, setWordInput] = useState('');
 
   const myPlayer = players[playerId];
@@ -12,6 +12,12 @@ const WordSelection = () => {
   // If current turn is B drawing, A gives the word. So word giving team is `opposingTeam`
   const isMyTurnToGiveWord = myPlayer.team === opposingTeam;
   const amILeader = myPlayer.isLeader;
+  
+  const drawingTeamPlayers = Object.entries(players).filter(([id, p]) => { void id; return p.team === currentTurnTeam; }).sort((a, b) => a[0].localeCompare(b[0]));
+  const drawerIndex = (currentRound - 1) % (drawingTeamPlayers.length || 1);
+  const nextDrawerId = drawingTeamPlayers.length > 0 ? drawingTeamPlayers[drawerIndex][0] : null;
+  const nextDrawerName = nextDrawerId && players[nextDrawerId] ? players[nextDrawerId].name : 'Someone';
+  const amINextDrawer = playerId === nextDrawerId;
 
   const handleSuggest = () => {
     if (!wordInput.trim()) return;
@@ -51,8 +57,12 @@ const WordSelection = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <div className="animate-pulse bg-gray-800/50 p-8 rounded-3xl border border-gray-700/50">
           <div className="text-6xl mb-4">🤫</div>
-          <h2 className="text-2xl font-bold text-gray-300">Team {opposingTeam} is choosing a secret word...</h2>
-          <p className="text-gray-500 mt-2">Get ready to draw and guess!</p>
+          <h2 className="text-2xl font-bold text-gray-300">{opposingTeam === 'A' ? (teamAName || 'Team A') : (teamBName || 'Team B')} is choosing a secret word for {nextDrawerName}!</h2>
+          {amINextDrawer ? (
+             <p className="text-yellow-400 mt-4 font-bold text-xl animate-bounce">It's your turn! Get ready to draw!</p>
+          ) : (
+             <p className="text-green-400 mt-4 font-bold text-xl">{nextDrawerName} will draw. Get ready to guess!</p>
+          )}
         </div>
       </div>
     );
@@ -61,7 +71,7 @@ const WordSelection = () => {
   return (
     <div className="max-w-2xl mx-auto w-full flex flex-col items-center bg-gray-800/40 p-8 rounded-3xl border border-gray-700 shadow-2xl">
       <h2 className="text-3xl font-black text-white mb-2">Choose the Secret Word</h2>
-      <p className="text-gray-400 mb-8">Suggest words. The Leader will pick the final one.</p>
+      <p className="text-gray-400 mb-8">Suggest words for <span className="font-bold text-yellow-400">{nextDrawerName}</span> to draw. The Leader will pick the final one.</p>
 
       <div className="w-full flex gap-3 mb-8">
         <input 
@@ -95,9 +105,14 @@ const WordSelection = () => {
                 <button 
                   onClick={() => {
                      const newSuggestions = [...suggestedWords];
-                     newSuggestions[idx].votes = (newSuggestions[idx].votes || 0) + 1;
-                     updateGameState({ suggestedWords: newSuggestions });
-                     broadcastState({ suggestedWords: newSuggestions });
+                     const suggestion = newSuggestions[idx];
+                     if (!suggestion.voters) suggestion.voters = [];
+                     if (!suggestion.voters.includes(myPlayer.name)) {
+                        suggestion.voters.push(myPlayer.name);
+                        suggestion.votes = suggestion.voters.length;
+                        updateGameState({ suggestedWords: newSuggestions });
+                        broadcastState({ suggestedWords: newSuggestions });
+                     }
                   }}
                   className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded-lg text-sm font-bold flex items-center"
                 >
