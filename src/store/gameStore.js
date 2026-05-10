@@ -21,6 +21,7 @@ const useGameStore = create((set) => ({
   currentDrawerId: null,
   drawingStarted: false,
   timeLeft: 120,
+  showConfettiForTeam: null,
   secretWord: '',
   suggestedWords: [], // { word, suggestedBy }
   

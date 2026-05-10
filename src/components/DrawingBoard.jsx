@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import CanvasDraw from 'react-canvas-draw';
+import Confetti from 'react-confetti';
 import useGameStore from '../store/gameStore';
 
 import { Eraser, Trash2, Send } from 'lucide-react';
@@ -8,7 +9,7 @@ const DrawingBoard = () => {
   const { 
     players, playerId, currentTurnTeam, secretWord, 
     updateGameState, chatHistory, teamAScore, teamBScore,
-    currentDrawerId, drawingStarted, timeLeft, teamAName, teamBName,
+    currentDrawerId, drawingStarted, timeLeft, teamAName, teamBName, showConfettiForTeam,
     broadcastState, sendChat 
   } = useGameStore();
   const canvasRef = useRef(null);
@@ -29,6 +30,14 @@ const DrawingBoard = () => {
   // The team opposing the drawing team is the judging team
   const judgingTeam = currentTurnTeam === 'A' ? 'B' : 'A';
   const isJudgingTeam = myTeam === judgingTeam;
+
+  const [confettiDimensions, setConfettiDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => setConfettiDimensions({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Handle canvas changes
   const handleDraw = () => {
@@ -51,6 +60,10 @@ const DrawingBoard = () => {
         const newTime = useGameStore.getState().timeLeft - 1;
         updateGameState({ timeLeft: newTime });
         broadcastState({ timeLeft: newTime });
+        if (newTime <= 0) {
+          // Auto trigger score 0 if time runs out
+          handleScore(0);
+        }
       }
     }, 1000);
     return () => clearInterval(timer);
@@ -98,23 +111,39 @@ const DrawingBoard = () => {
       teamAScore: newA,
       teamBScore: newB,
       currentTurnTeam: judgingTeam, // Switch turns
-      gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION',
       secretWord: '',
       drawingData: '',
       suggestedWords: [],
       drawingStarted: false,
       timeLeft: 120,
-      currentRound: nextRound
+      currentRound: nextRound,
+      showConfettiForTeam: points > 0 ? currentTurnTeam : null
     };
 
-    updateGameState(nextState);
-    broadcastState(nextState);
+    if (points > 0) {
+        // Show confetti first, delay state transition
+        const tempState = { showConfettiForTeam: currentTurnTeam, teamAScore: newA, teamBScore: newB, drawingStarted: false };
+        updateGameState(tempState);
+        broadcastState(tempState);
+        
+        setTimeout(() => {
+            const currentStateObj = useGameStore.getState();
+            const finalState = { gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION', showConfettiForTeam: null };
+            currentStateObj.updateGameState(finalState);
+            currentStateObj.broadcastState(finalState);
+        }, 4000);
+    } else {
+        const finalState = { ...nextState, gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION' };
+        updateGameState(finalState);
+        broadcastState(finalState);
+    }
   };
 
   const colors = ['#ffffff', '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#a855f7'];
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl mx-auto h-[80vh]">
+      {showConfettiForTeam === myTeam && <Confetti width={confettiDimensions.width} height={confettiDimensions.height} numberOfPieces={300} recycle={false} />} 
       
       {/* Left: Canvas Area */}
       <div className="flex-1 flex flex-col bg-gray-800/80 border border-gray-700 rounded-3xl overflow-hidden shadow-2xl relative">
