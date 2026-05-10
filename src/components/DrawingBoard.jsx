@@ -102,7 +102,9 @@ const DrawingBoard = () => {
     // Move to next round/turn
     const currentState = useGameStore.getState();
     let nextRound = currentState.currentRound;
-    if (currentTurnTeam === 'B') {
+    // Turn starts with B, then switches to A. A full round is when both have played.
+    // Since A plays second, increment the round after A's turn is over.
+    if (currentTurnTeam === 'A') {
         nextRound += 1;
     }
     const isGameOver = nextRound > currentState.maxRounds;
@@ -128,7 +130,7 @@ const DrawingBoard = () => {
         
         setTimeout(() => {
             const currentStateObj = useGameStore.getState();
-            const finalState = { gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION', showConfettiForTeam: null };
+            const finalState = { ...nextState, gameState: isGameOver ? 'GAME_OVER' : 'WORD_SELECTION', showConfettiForTeam: null };
             currentStateObj.updateGameState(finalState);
             currentStateObj.broadcastState(finalState);
         }, 4000);
