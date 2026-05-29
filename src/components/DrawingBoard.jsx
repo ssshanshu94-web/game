@@ -17,6 +17,7 @@ const DrawingBoard = () => {
   const [color, setColor] = useState('#ffffff');
   const [brushRadius, setBrushRadius] = useState(3);
   const [chatInput, setChatInput] = useState('');
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   const myPlayer = players[playerId];
   const myTeam = myPlayer.team;
@@ -62,7 +63,7 @@ const DrawingBoard = () => {
         broadcastState({ timeLeft: newTime });
         if (newTime <= 0) {
           // Auto trigger score 0 if time runs out
-          handleScore(0);
+          handleScore(0, true);
         }
       }
     }, 1000);
@@ -92,8 +93,10 @@ const DrawingBoard = () => {
     setChatInput('');
   };
 
-  const handleScore = (points) => {
-    if (!isJudgingTeam) return;
+  const handleScore = (points, isAuto = false) => {
+    if (scoreSubmitted) return;
+    if (!isAuto && !isJudgingTeam) return;
+    setScoreSubmitted(true);
 
     // Award points
     const newA = currentTurnTeam === 'A' ? teamAScore + points : teamAScore;
@@ -174,8 +177,8 @@ const DrawingBoard = () => {
           
           {isJudgingTeam && (
             <div className="flex gap-2">
-              <button onClick={() => handleScore(0)} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-4 py-1.5 rounded-lg text-sm font-bold transition">Time Up / +0</button>
-              <button onClick={() => handleScore(5)} className="bg-green-600 hover:bg-green-500 text-white shadow-[0_0_15px_rgba(22,163,74,0.4)] px-4 py-1.5 rounded-lg text-sm font-black transition">Correct / +5</button>
+              <button onClick={() => handleScore(0)} disabled={scoreSubmitted} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-4 py-1.5 rounded-lg text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">Time Up / +0</button>
+              <button onClick={() => handleScore(5)} disabled={scoreSubmitted} className="bg-green-600 hover:bg-green-500 text-white shadow-[0_0_15px_rgba(22,163,74,0.4)] px-4 py-1.5 rounded-lg text-sm font-black transition disabled:opacity-50 disabled:cursor-not-allowed">Correct / +5</button>
             </div>
           )}
         </div>
@@ -197,7 +200,11 @@ const DrawingBoard = () => {
         )}
 
         {/* Canvas */}
-        <div className="flex-1 bg-[#1f2937] w-full h-full pt-16">
+        <div 
+           className="flex-1 bg-[#1f2937] w-full h-full pt-16"
+           onMouseDown={() => { if (isDrawer && !drawingStarted) { updateGameState({ drawingStarted: true }); broadcastState({ drawingStarted: true }); } }}
+           onTouchStart={() => { if (isDrawer && !drawingStarted) { updateGameState({ drawingStarted: true }); broadcastState({ drawingStarted: true }); } }}
+        >
           {isDrawer ? (
           <CanvasDraw
             ref={canvasRef}
